@@ -39,20 +39,15 @@ module Part1 =
 ///<summary>
 /// What is the product of the three entries that sum to 2020
 ///</summary>
-/// TODO: Try to solve this is a functional way... 🙃
 module Part2 =
 
     let multiplyFirstThreeEntriesThatSum2020 report =
-        let mutable ans = 0
-
-        for x in report do
+        [for x in report do
             for y in report do
                 for z in report do
-                    match x + y + z with
-                    | 2020 -> ans <- x * y * z
-                    | _ -> ()
-
-        ans
+                    yield (x, y, z)]
+        |> Seq.find (fun (x, y, z) -> x + y + z = 2020)
+        |> fun (x, y, z) -> x * y * z
 
     testcase
     |> multiplyFirstThreeEntriesThatSum2020
