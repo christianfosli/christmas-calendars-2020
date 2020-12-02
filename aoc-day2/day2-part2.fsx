@@ -30,10 +30,8 @@ let validate policy password =
 
     match (first, second) with
     | (Some first, Some second) when first = policy.letter && second = policy.letter -> None
-    | (Some first, Some _) when first = policy.letter -> Some password
-    | (Some _, Some second) when second = policy.letter -> Some password
-    | (Some letter, _) -> if letter = policy.letter then Some password else None
-    | (_, Some letter) -> if letter = policy.letter then Some password else None
+    | (Some first, _) when first = policy.letter -> Some password
+    | (_, Some second) when second = policy.letter -> Some password
     | _ -> None
 
 
