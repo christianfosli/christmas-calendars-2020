@@ -8,16 +8,16 @@ type PasswordPolicy =
       letter: char }
 
 let parse (line: string) =
-    let line = line.Split " "
+    let words = line.Split " "
 
     let (firstPos, secondPos) =
-        line.[0]
-        |> fun r ->
-            r.Split "-"
-            |> fun r -> int r.[0] - 1, int r.[1] - 1 // subtract one to normalize index (start at zero)
+        words.[0]
+        |> fun x ->
+            x.Split "-"
+            |> fun x -> int x.[0] - 1, int x.[1] - 1 // subtract one to normalize index (start at zero)
 
-    let letter = line.[1].[0]
-    let password = line.[2]
+    let letter = words.[1].[0]
+    let password = words.[2]
 
     ({ firstPos = firstPos
        secondPos = secondPos

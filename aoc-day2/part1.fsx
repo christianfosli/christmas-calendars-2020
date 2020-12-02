@@ -7,10 +7,10 @@ type PasswordPolicy =
       letter: char }
 
 let parse (line: string) =
-    let line = line.Split " "
-    let (atLeast, atMost) = line.[0] |> fun r -> r.Split "-" |> fun r -> int r.[0], int r.[1]
-    let letter = line.[1].[0]
-    let password = line.[2]
+    let words = line.Split " "
+    let (atLeast, atMost) = words.[0] |> fun x -> x.Split "-" |> fun x -> int x.[0], int x.[1]
+    let letter = words.[1].[0]
+    let password = words.[2]
 
     ({ atLeast = atLeast
        atMost = atMost
