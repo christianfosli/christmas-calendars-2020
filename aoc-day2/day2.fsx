@@ -8,9 +8,7 @@ type PasswordPolicy =
 
 let parse (line: string) =
     let line = line.Split " "
-    let range = line.[0] |> fun r -> r.Split "-"
-    let atLeast = int range.[0]
-    let atMost = int range.[1]
+    let (atLeast, atMost) = line.[0] |> fun r -> r.Split "-" |> fun r -> int r.[0], int r.[1]
     let letter = line.[1].[0]
     let password = line.[2]
 
@@ -19,10 +17,16 @@ let parse (line: string) =
        letter = letter },
      password)
 
-let validate (policy: PasswordPolicy) (password: string) =
-    match password.Count(fun c -> c = policy.letter) with
-    | count when count >= policy.atLeast && count <= policy.atMost -> Some password
-    | _ -> None
+let validate policy password =
+    password
+    |> Seq.filter (fun char -> char = policy.letter)
+    |> Seq.length
+    |> fun length ->
+        if length >= policy.atLeast
+           && length <= policy.atMost then
+            Some password
+        else
+            None
 
 File.ReadLines "puzzle.txt"
 |> Seq.map parse
