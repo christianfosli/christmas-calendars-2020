@@ -1,55 +1,31 @@
-#r "nuget: FSharp.Data"
-open FSharp.Data
+//#r "nuget: FSharp.Data"
+//open FSharp.Data
+open Microsoft.FSharp.Collections
 
-let containsWord (matrix: char list list) (word: string): bool =
-    let word = Seq.ofArray (word.ToCharArray())
-    matrix |> List.exists (fun row -> List.contains word row)
-    // aarghghghg this is a mess
-
-let notHere (matrix: char list list) (words: string list) =
-    words
-    |> List.filter (fun word -> not (containsWord matrix word))
-    |> List.sort
+// --- Didn't finish this one in time --- //
 
 let asMatrix (text: string) =
     text
     |> fun text -> text.Split "\n"
     |> List.ofArray
     |> List.map (fun line -> List.ofArray (line.ToCharArray()))
+    |> array2D
 
+let words =
+    [ "kakao"
+      "kriminalroman"
+      "kvikklunch"
+      "kylling"
+      "langfredag"
+      "langrennski"
+      "palmesøndag"
+      "påskeegg"
+      "smågodt"
+      "solvegg"
+      "yatzy" ]
 
-module Main =
-    let matrix =
-        Http.RequestString
-            "https://gist.githubusercontent.com/knowitkodekalender/d277d4f01a9fe10f7c1d92e2d17f1b31/raw/49da54e4372a83f4fc11d7137f19fc8b4c58bda6/matrix.txt"
-        |> asMatrix
-
-    let words =
-        Http.RequestString
-            "https://gist.githubusercontent.com/knowitkodekalender/9e1ba20cd879b0c6d7af4ccfe8a87a19/raw/b19ae9548a33a825e2275d0283986070b9b7a126/wordlist.txt"
-        |> fun res -> res.Split "\n"
-        |> List.ofArray
-
-    notHere matrix words
-    |> String.concat ","
-    |> printfn "%A"
-
-module Test =
-    let words =
-        [ "kakao"
-          "kriminalroman"
-          "kvikklunch"
-          "kylling"
-          "langfredag"
-          "langrennski"
-          "palmesøndag"
-          "påskeegg"
-          "smågodt"
-          "solvegg"
-          "yatzy" ]
-
-    let matrix =
-        "vlzzrkytiempkxg
+let matrix =
+    "vlzzrkytiempkxg
 wkuwuuniimpuzka
 ufrazcavumtagod
 ooscwzmvscdngwe
@@ -64,11 +40,30 @@ lvnrvdizullcvsx
 oscponrepvyatzy
 rbhovtkpfljkihq
 wjssiksnnergnal"
-        |> asMatrix
+    |> asMatrix
 
-    match notHere matrix words with
-    | [ "palmesøndag"; "påskeegg"; "smågodt" ] -> ()
-    | wrong -> failwithf "expected %A but got %A" [ "palmesøndag"; "påskeegg"; "smågodt" ] wrong
+let found =
+    words
+    |> Seq.filter (fun word ->
+        let w = List.ofArray (word.ToCharArray())
 
-open Test
-open Main
+        if matrix.[1.., *]
+           |> Seq.cast<'T>
+           |> Seq.exists (fun row ->
+               Seq.contains w row
+               || (Seq.rev row |> Seq.contains w)) then
+            true
+        elif matrix.[*, 1..]
+             |> Seq.cast<'T>
+             |> Seq.exists (fun col ->
+                 Seq.contains w col
+                 || (Seq.rev col |> Seq.contains w)) then
+            true
+        else
+            // TODO: Diag
+            false)
+    |> Set.ofSeq
+
+match List.ofSeq (found - Set.ofList words) with
+| [ "palmesøndag"; "påskeegg"; "smågodt" ] -> ()
+| wrong -> failwithf "expected %A but got %A" [ "palmesøndag"; "påskeegg"; "smågodt" ] wrong
