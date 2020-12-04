@@ -1,4 +1,7 @@
+open System
 open System.IO
+
+// Given a list of ingredients, how many cakes where made this year?
 
 type Ingredients =
     { Sugar: int
@@ -6,19 +9,21 @@ type Ingredients =
       Milk: int
       Egg: int }
 
-let rec bakeCakes (currentCakes: int) (ingredients: Ingredients) =
-    if ingredients.Sugar >= 2
-       && ingredients.Flour >= 3
-       && ingredients.Milk >= 3
-       && ingredients.Egg >= 1 then
-        bakeCakes
-            (currentCakes + 1)
-            { Sugar = ingredients.Sugar - 2
-              Flour = ingredients.Flour - 3
-              Milk = ingredients.Milk - 3
-              Egg = ingredients.Egg - 1 }
-    else
-        (currentCakes, ingredients)
+// returns (numberOfCakes, leftOverIngredients)
+let bakeCakes ingredients =
+    let numberOfCakes =
+        [ ingredients.Sugar / 2
+          ingredients.Flour / 3
+          ingredients.Milk / 3
+          ingredients.Egg ]
+        |> Seq.sort
+        |> Seq.head
+
+    (numberOfCakes,
+     { Sugar = ingredients.Sugar - numberOfCakes * 2
+       Flour = ingredients.Flour - numberOfCakes * 3
+       Milk = ingredients.Milk - numberOfCakes * 3
+       Egg = ingredients.Egg - numberOfCakes })
 
 File.ReadLines "leveringsliste.txt"
 |> Seq.map (fun line ->
@@ -44,5 +49,5 @@ File.ReadLines "leveringsliste.txt"
       Flour = acc.Flour + el.Flour
       Milk = acc.Milk + el.Milk
       Egg = acc.Egg + el.Egg })
-|> fun ingredients -> bakeCakes 0 ingredients
+|> bakeCakes
 |> printfn "%A"
