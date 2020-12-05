@@ -8,12 +8,28 @@ My solutions for code calendars Christmas 2020.
 
 ---
 
-I'm mostly doing these in fsharp, to get familiar with fsharp.
+I'm mostly doing these in fsharp, to get familiar with the language.
 
 `.fsx` files are fsharp interactive files.
-Run them with `dotnet fsi <filename>`.
-This requires the dotnet sdk.
+Run them with
 
-I'll include a Dockerfile when I'm using features that require dotnet 5,
-since that sdk isn't available yet for many linux distros (including the one I'm
-using... :smile: )
+```console
+dotnet fsi <filename>
+```
+
+This requires the dotnet sdk.
+Alternatively you could use docker:
+
+```console
+docker run --rm -it -v "$(pwd):/app" \
+	mcr.microsoft.com/dotnet/sdk:5.0 \
+	/bin/bash -c "cd /app && dotnet fsi <filename>"
+```
+
+I'll include a Dockerfile where I think it makes sense.
+That makes running with docker a bit simpler:
+
+```console
+docker build -t dayX .
+docker run --rm dayX
+```
