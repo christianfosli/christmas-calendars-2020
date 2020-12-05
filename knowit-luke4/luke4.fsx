@@ -9,6 +9,12 @@ type Ingredients =
       Milk: int
       Egg: int }
 
+    static member (+)(i1, i2) =
+        { Sugar = i1.Sugar + i2.Sugar
+          Flour = i1.Flour + i2.Flour
+          Milk = i1.Milk + i2.Milk
+          Egg = i1.Egg + i2.Egg }
+
 // returns (numberOfCakes, leftOverIngredients)
 let bakeCakes ingredients =
     let numberOfCakes =
@@ -25,8 +31,7 @@ let bakeCakes ingredients =
        Milk = ingredients.Milk - numberOfCakes * 3
        Egg = ingredients.Egg - numberOfCakes })
 
-File.ReadLines "leveringsliste.txt"
-|> Seq.map (fun line ->
+let parse (line: string) =
     line.Replace(" ", "")
     |> fun line -> line.Split ","
     |> Seq.map (fun kv -> kv.Split ":" |> fun kv -> (kv.[0], int kv.[1]))
@@ -43,11 +48,10 @@ File.ReadLines "leveringsliste.txt"
                |> Option.defaultValue 0)
           Egg =
               Map.tryFind "egg" ingredients
-              |> Option.defaultValue 0 })
-|> Seq.reduce (fun acc el ->
-    { Sugar = acc.Sugar + el.Sugar
-      Flour = acc.Flour + el.Flour
-      Milk = acc.Milk + el.Milk
-      Egg = acc.Egg + el.Egg })
+              |> Option.defaultValue 0 }
+
+File.ReadLines "leveringsliste.txt"
+|> Seq.map parse
+|> Seq.reduce (+)
 |> bakeCakes
 |> printfn "%A"
