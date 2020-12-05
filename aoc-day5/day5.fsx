@@ -4,37 +4,28 @@ type Seat = int * int
 
 let id ((row, col): Seat): int = row * 8 + col
 
-// TODO: Remove duplication
 let parse (line: string): Seat =
-    let row =
-        line.[0..6]
+    let binarySearch letters (min, max) =
+        letters
         |> Seq.fold (fun (min, max, _) el ->
             let delta = int (round (float (max - min) / 2.0))
 
             match el with
-            | 'F' -> (min, max - delta, Some 'F')
-            | 'B' -> (min + delta, max, Some 'B')
-            | _ -> failwith "Unexpected char") (0, 127, None)
+            | 'F'
+            | 'L' -> (min, max - delta, Some el)
+            | 'B'
+            | 'R' -> (min + delta, max, Some el)
+            | _ -> failwith "Unexpected char") (min, max, None)
         |> fun (min, max, last) ->
             match last with
-            | Some 'F' -> min
-            | Some 'B' -> max
-            | _ -> failwith "Unexpected char"
-
-    let col =
-        line.[7..9]
-        |> Seq.fold (fun (min, max, _) el ->
-            let delta = int (round (float (max - min) / 2.0))
-
-            match el with
-            | 'L' -> (min, max - delta, Some 'L')
-            | 'R' -> (min + delta, max, Some 'R')
-            | _ -> failwithf "Unexpected char") (0, 7, None)
-        |> fun (min, max, last) ->
-            match last with
+            | Some 'F'
             | Some 'L' -> min
+            | Some 'B'
             | Some 'R' -> max
             | _ -> failwith "Unexpected char"
+
+    let row = binarySearch line.[0..6] (0, 127)
+    let col = binarySearch line.[7..9] (0, 7)
 
     (row, col)
 
