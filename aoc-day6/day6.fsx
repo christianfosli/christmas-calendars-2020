@@ -13,21 +13,19 @@ let customDeclarationsByGroup =
 let countQuestionsAnswered (answers: string) =
     answers.Replace("\n", "")
     |> Set.ofSeq
-    |> Seq.length
+    |> Set.count
 
 customDeclarationsByGroup
-|> Array.map countQuestionsAnswered
-|> Array.sum
+|> Array.sumBy countQuestionsAnswered
 |> printfn "Sum of 'yes'-questions answered by anyone per group: %i"
 
 // part 2
 let countQuestionsAnsweredByEveryone (answers: string) =
     answers.Split "\n"
     |> Seq.map Set.ofSeq
-    |> Seq.reduce Set.intersect
-    |> Seq.length
+    |> Set.intersectMany
+    |> Set.count
 
 customDeclarationsByGroup
-|> Array.map countQuestionsAnsweredByEveryone
-|> Array.sum
+|> Array.sumBy countQuestionsAnsweredByEveryone
 |> printfn "Sum of 'yes'-questions answered by everyone per group: %i"
