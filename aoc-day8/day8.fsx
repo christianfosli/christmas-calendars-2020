@@ -29,26 +29,26 @@ let bootCode =
     |> Seq.mapi parse
     |> List.ofSeq
 
-let rec run (code: Instruction list) (lineNumber: int) (history: Instruction list) (acc: int) =
-    let instruction = List.tryItem lineNumber bootCode
+let rec run (code: Instruction list) (lineNumber: int) (history: Set<int>) (acc: int) (debug: bool) =
+    let instruction = List.tryItem lineNumber code
 
     match instruction with
-    | Some inst when List.contains inst history ->
-        printfn "Instruction %A executed earlier. Stopping execution with reg %i" inst acc
+    | Some inst when Set.contains inst.LineNumber history ->
+        if debug
+        then printfn "Instruction %A executed earlier. Stopping execution with reg %i" inst acc
+
         None
     | Some inst ->
         match inst.Operation with
-        | Accumulate -> run code (lineNumber + 1) (inst :: history) (acc + inst.Argument)
-        | Jump -> run code (lineNumber + inst.Argument) (inst :: history) (acc)
-        | NoOp -> run code (lineNumber + 1) (inst :: history) (acc)
+        | Accumulate -> run code (lineNumber + 1) (Set.add inst.LineNumber history) (acc + inst.Argument) debug
+        | Jump -> run code (lineNumber + inst.Argument) (Set.add inst.LineNumber history) (acc) debug
+        | NoOp -> run code (lineNumber + 1) (Set.add inst.LineNumber history) (acc) debug
     | None -> Some acc
 
 // Part 1 --> Value of accumulator just before an instruction is executed twice
-run bootCode 0 [] 0 |> printfn "%A"
+run bootCode 0 Set.empty 0 true |> printfn "%A"
 
 // Part 2 --> Fix the program, what is the value of accumulator after executing fully
-// TODO: There is a bug somewhere here, because I get stuck in a loop always...
-// but I cant figure out what's wrong
 let changeOp (code: Instruction list) linenumber newOperation =
     let updated =
         List.find (fun inst -> inst.LineNumber = linenumber) code
@@ -71,7 +71,5 @@ List.filter (fun inst ->
     | Operation.Jump -> changeOp bootCode inst.LineNumber Operation.NoOp
     | Operation.NoOp -> changeOp bootCode inst.LineNumber Operation.Jump
     | _ -> failwith "Unexpected operation in list")
-|> Seq.tryPick (fun code -> run code 0 [] 0)
+|> Seq.tryPick (fun code -> run code 0 Set.empty 0 false)
 |> printfn "%A"
-
-printf "%A" bootCode
