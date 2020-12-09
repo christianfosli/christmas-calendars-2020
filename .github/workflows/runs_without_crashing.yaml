@@ -14,7 +14,14 @@ jobs:
             for f in *.fsx; do
               printf 'Running %s\n' "$f"
               docker run --rm -v "$(pwd):/app" mcr.microsoft.com/dotnet/sdk:5.0 \
-                /bin/bash -c "cd /app && dotnet fsi $f"
+                /bin/bash -c "cd /app && dotnet fsi $f" \
+                || (touch /tmp/failures && printf '%s\n' "$f" >> /tmp/failures)
             done
             popd
           done
+
+          if [[ -f /tmp/failures ]]; then
+            printf '******\n\n%d tests failed\n\n' "$(wc -l < /tmp/failures)"
+            cat /tmp/failures
+            exit 1
+          fi
