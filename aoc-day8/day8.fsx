@@ -24,11 +24,6 @@ let parse (index: int) (line: string) =
       Argument = argument
       LineNumber = index }
 
-let bootCode =
-    File.ReadLines "input.txt"
-    |> Seq.mapi parse
-    |> List.ofSeq
-
 let rec run (code: Instruction list) (lineNumber: int) (history: Set<int>) (acc: int) (debug: bool) =
     let instruction = List.tryItem lineNumber code
 
@@ -41,9 +36,14 @@ let rec run (code: Instruction list) (lineNumber: int) (history: Set<int>) (acc:
     | Some inst ->
         match inst.Operation with
         | Accumulate -> run code (lineNumber + 1) (Set.add inst.LineNumber history) (acc + inst.Argument) debug
-        | Jump -> run code (lineNumber + inst.Argument) (Set.add inst.LineNumber history) (acc) debug
-        | NoOp -> run code (lineNumber + 1) (Set.add inst.LineNumber history) (acc) debug
+        | Jump -> run code (lineNumber + inst.Argument) (Set.add inst.LineNumber history) acc debug
+        | NoOp -> run code (lineNumber + 1) (Set.add inst.LineNumber history) acc debug
     | None -> Some acc
+
+let bootCode =
+    File.ReadLines "input.txt"
+    |> Seq.mapi parse
+    |> List.ofSeq
 
 // Part 1 --> Value of accumulator just before an instruction is executed twice
 run bootCode 0 Set.empty 0 true |> printfn "%A"
