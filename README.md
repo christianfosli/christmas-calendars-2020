@@ -1,5 +1,7 @@
 # Christmas Calendars 2020
 
+![all solutions run without crashing](https://github.com/christianfosli/christmas-calendars-2020/workflows/all%20solutions%20run%20without%20crashing/badge.svg)
+
 My solutions for code calendars Christmas 2020.
 
 * [Advent of Code](https://adventofcode.com/2020)
