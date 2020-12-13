@@ -9,7 +9,11 @@ fn parse(busses: &str) -> Vec<Option<usize>> {
 }
 
 fn next_dep(timestamp: usize, buss: usize) -> usize {
-    buss * ((timestamp as f64 / buss as f64).ceil() as usize)
+    buss * ceil_divide(timestamp, buss)
+}
+
+fn ceil_divide(n1: usize, n2: usize) -> usize {
+    1 + ((n1 - 1) / n2)
 }
 
 fn is_sequential(busses: &Vec<Option<usize>>, timestamp: usize) -> bool {
@@ -28,12 +32,14 @@ fn is_sequential(busses: &Vec<Option<usize>>, timestamp: usize) -> bool {
 
 fn find_first_sequential_ts(busses: &Vec<Option<usize>>) -> Option<usize> {
     let first_bus = busses[0].unwrap();
-    (0..).step_by(first_bus).find(|ts| is_sequential(busses, *ts))
+    (first_bus..)
+        .step_by(first_bus)
+        .find(|ts| is_sequential(busses, *ts))
 }
 
 fn par_find_first_sequential_ts(busses: &Vec<Option<usize>>) -> Option<usize> {
     let first_bus = busses[0].unwrap();
-    (0..std::u64::MAX as usize)
+    (first_bus..std::u64::MAX as usize)
         .into_par_iter()
         .step_by(first_bus)
         .find_any(|ts| is_sequential(busses, *ts))
