@@ -39,7 +39,7 @@ fn find_first_sequential_ts(busses: &Vec<Option<usize>>) -> Option<usize> {
 
 fn par_find_first_sequential_ts(busses: &Vec<Option<usize>>) -> Option<usize> {
     let first_bus = busses[0].unwrap();
-    (first_bus..std::u64::MAX as usize)
+    (first_bus..usize::MAX)
         .into_par_iter()
         .step_by(first_bus)
         .find_any(|ts| is_sequential(busses, *ts))
