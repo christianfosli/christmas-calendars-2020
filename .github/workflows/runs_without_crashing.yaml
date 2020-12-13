@@ -7,9 +7,26 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-      - name: run all fsharp interactive files
+      - name: run rust unit tests
         run: |
           for d in */; do
+            pushd "$d"
+            if [[ -f "./Cargo.toml" ]]; then
+              cargo test || (touch /tmp/rustfail && printf '%s\n' "%d" >> /tmp/rustfail)
+            fi
+            popd
+          done
+
+          if [[ -f /tmp/rustfail ]]; then
+            printf '******\n\n%d tests failed\n\n' "$(wc -l < /tmp/failures)"
+            cat /tmp/rustfail
+            exit 1
+          fi
+
+      - name: run fsharp interactive files
+        run: |
+          for d in */; do
+            ls "$d*.fsx" || continue
             pushd "$d"
             for f in *.fsx; do
               printf 'Running %s\n' "$f"
