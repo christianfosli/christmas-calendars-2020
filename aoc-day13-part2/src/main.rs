@@ -28,12 +28,7 @@ fn is_sequential(busses: &Vec<Option<usize>>, timestamp: usize) -> bool {
 
 fn find_first_sequential_ts(busses: &Vec<Option<usize>>) -> Option<usize> {
     let first_bus = busses[0].unwrap();
-    (0..).step_by(first_bus).find(|ts| {
-        if ts % 1_000_000 == 0 {
-            println!("-");
-        }
-        is_sequential(busses, *ts)
-    })
+    (0..).step_by(first_bus).find(|ts| is_sequential(busses, *ts))
 }
 
 fn par_find_first_sequential_ts(busses: &Vec<Option<usize>>) -> Option<usize> {

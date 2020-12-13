@@ -40,7 +40,7 @@ let firstBus =
     List.head busses |> Option.defaultValue 0
 
 let firstBusDepartures =
-    Seq.initInfinite (fun t -> nextDep (t + 1) firstBus)
+    Seq.initInfinite (fun t -> t + firstBus)
 
 // This takes too long to calculate so we don't get anywhere...
 //firstBusDepartures
