@@ -1,56 +1,56 @@
-use rayon::prelude::*;
 use std::{
     fs::File,
     io::{BufRead, BufReader},
 };
 
-fn parse(busses: &str) -> Vec<Option<usize>> {
-    busses.split(",").map(|b| b.parse::<usize>().ok()).collect()
+#[derive(Copy, Clone, Debug, PartialEq)]
+struct Bus {
+    index: usize,
+    step: isize,
 }
 
-fn next_dep(timestamp: usize, buss: usize) -> usize {
-    buss * ceil_divide(timestamp, buss)
+trait MathTools {
+    /// Inverse mod. Only works when p is prime.
+    fn inv_mod(&self, p: isize) -> isize;
 }
 
-fn ceil_divide(n1: usize, n2: usize) -> usize {
-    1 + ((n1 - 1) / n2)
+impl MathTools for isize {
+    fn inv_mod(&self, p: isize) -> isize {
+        (0..p - 2).fold(1, |o, _| (o * self) % p)
+    }
 }
 
-fn is_sequential(busses: &Vec<Option<usize>>, timestamp: usize) -> bool {
+fn parse(busses: &str) -> Vec<Bus> {
     busses
-        .into_iter()
-        .map(|x| match x {
-            Some(x) => Some(next_dep(timestamp, *x)),
-            None => None,
-        })
+        .trim()
+        .split(",")
+        .map(|b| b.parse::<isize>().ok())
         .enumerate()
-        .all(|(i, el)| match el {
-            Some(t) => t - timestamp == i,
-            None => true,
+        .filter_map(|(index, step)| step.and_then(|step| Some(Bus { index, step })))
+        .collect()
+}
+
+fn find_t(busses: &Vec<Bus>) -> isize {
+    // Using Fermat's little theorem (https://en.wikipedia.org/wiki/Fermat%27s_little_theorem)
+    // Inspired by u/altinus on https://www.reddit.com/r/rust/comments/kc5phc/advent_of_code_2020_day_13/
+    // I don't really get it but it works
+
+    let product = busses.iter().map(|b| b.step).product();
+    busses
+        .iter()
+        .map(|b| {
+            -(b.index as isize) * (product / b.step) * ((product / b.step) as isize).inv_mod(b.step)
         })
-}
-
-fn find_first_sequential_ts(busses: &Vec<Option<usize>>) -> Option<usize> {
-    let first_bus = busses[0].unwrap();
-    (first_bus..)
-        .step_by(first_bus)
-        .find(|ts| is_sequential(busses, *ts))
-}
-
-fn par_find_first_sequential_ts(busses: &Vec<Option<usize>>) -> Option<usize> {
-    let first_bus = busses[0].unwrap();
-    (first_bus..usize::MAX)
-        .into_par_iter()
-        .step_by(first_bus)
-        .find_any(|ts| is_sequential(busses, *ts))
+        .sum::<isize>()
+        .rem_euclid(product)
 }
 
 fn main() -> Result<(), anyhow::Error> {
     let file = File::open("input.txt")?;
-    let busses = BufReader::new(file).lines().skip(1).next().unwrap()?;
+    let busses = BufReader::new(file).lines().nth(1).unwrap()?;
     let busses = parse(&busses);
-    let the_one = par_find_first_sequential_ts(&busses);
-    println!("{:?}", the_one);
+    let t = find_t(&busses);
+    println!("{}", t);
     Ok(())
 }
 
@@ -61,7 +61,11 @@ mod tests {
     #[test]
     fn it_parses_busses() {
         assert_eq!(
-            vec![Some(17), None, Some(13), Some(19)],
+            vec![
+                Bus { index: 0, step: 17 },
+                Bus { index: 2, step: 13 },
+                Bus { index: 3, step: 19 }
+            ],
             parse("17,x,13,19")
         );
     }
@@ -69,6 +73,6 @@ mod tests {
     #[test]
     fn it_passes_aoc_testcase() {
         let busses = parse("7,13,x,x,59,x,31,19");
-        assert_eq!(Some(1068781), find_first_sequential_ts(&busses));
+        assert_eq!(1068781, find_t(&busses));
     }
 }
