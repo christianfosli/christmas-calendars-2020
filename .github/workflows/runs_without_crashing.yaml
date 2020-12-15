@@ -26,13 +26,14 @@ jobs:
       - name: run fsharp interactive files
         run: |
           for d in */; do
-            ls "$d*.fsx" || continue
             pushd "$d"
             for f in *.fsx; do
-              printf 'Running %s\n' "$f"
-              docker run --rm -v "$(pwd):/app" mcr.microsoft.com/dotnet/sdk:5.0 \
-                /bin/bash -c "cd /app && dotnet fsi $f" \
-                || (touch /tmp/failures && printf '%s\n' "$f" >> /tmp/failures)
+              if [[ -f "$f" ]]; then
+                printf 'Running %s\n' "$f"
+                docker run --rm -v "$(pwd):/app" mcr.microsoft.com/dotnet/sdk:5.0 \
+                  /bin/bash -c "cd /app && dotnet fsi $f" \
+                  || (touch /tmp/failures && printf '%s\n' "$f" >> /tmp/failures)
+              fi
             done
             popd
           done
