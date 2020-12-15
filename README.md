@@ -35,3 +35,13 @@ That makes running with docker a bit simpler:
 docker build -t dayX .
 docker run --rm dayX
 ```
+
+---
+
+I'll solve a few problems in Rust too.
+Here is how to run those locally:
+
+```console
+cargo test # run tests
+cargo run  # run main
+```
