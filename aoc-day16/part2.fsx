@@ -1,6 +1,10 @@
 open System
 open System.IO
 
+// ****
+// --- WIP Warning --- Not Yet Finished ---
+// ****
+
 module FieldRule =
     type Range = int * int // min, max  Inclusive!
 
@@ -50,7 +54,6 @@ let validateTicket (rules: FieldRule.T seq) (ticket: string) =
     else None
 
 let crackFields (rules: FieldRule.T seq) (validTickets: (int list) seq) =
-    // TODO: This needs some cleanup!!!
     let numberOfFields = Seq.length rules
 
     let potentialFields (rule: FieldRule.T) (tickets: (int list) seq) =
@@ -59,58 +62,14 @@ let crackFields (rules: FieldRule.T seq) (validTickets: (int list) seq) =
             Seq.map (fun (t: int list) -> t.[i]) tickets
             |> Seq.forall (fun f -> FieldRule.validate f rule |> Option.isSome))
 
-    let possibilities =
+    let possibleFieldsPerRule =
         Seq.map (fun r -> (r, potentialFields r validTickets)) rules
 
-    possibilities |> List.ofSeq
-//|> List.map (fun num -> (num, Seq.filter (fun (r, l) -> List.exists (fun n -> n = num)) l) possibilities)
-
-//    let rec tryToFindExactFields (map: Map<FieldRule.T, int list>) (evicted: int list) =
-//        if Map.forall (fun _ fieldNumbers -> (List.length fieldNumbers) = 1) map then
-//            map
-//        else
-//            let sortedExceptSinglesAndAllEvicted =
-//                Map.toList map
-//                |> List.sortBy (fun (_, fieldNumbers) -> List.length fieldNumbers)
-//                |> List.skipWhile (fun (_, fieldNumbers) -> (List.length fieldNumbers) = 1)
-//                |> List.filter (fun (_, fieldNumbers) ->
-//                    not (List.forall (fun field -> List.exists (fun ev -> ev = field) evicted) fieldNumbers))
-//
-//            let ((evictfrom, evictionCandidates), rest) =
-//                (List.head sortedExceptSinglesAndAllEvicted,
-//                 List.skip 1 sortedExceptSinglesAndAllEvicted
-//                 |> List.map (fun (k, v) -> v)
-//                 |> List.concat
-//                 |> Set.ofList)
-//
-//            let evict =
-//                Set.ofList evictionCandidates
-//                |> Set.intersect rest
-//                |> Seq.tryHead
-//
-//            match evict with
-//            | Some ev ->
-//                Map.toList map
-//                |> List.map (fun (k, v) ->
-//                    if k = evictfrom then
-//                        (k, v)
-//                    else
-//                        (k,
-//                         List.map (fun num -> if num = ev then None else Some num) v
-//                         |> List.choose id))
-//                |> Map.ofList
-//                |> fun newMap -> tryToFindExactFields newMap (ev :: evicted)
-//            | None ->
-//                printfn "Nothing found to evict... If this appears continiously its an endless loop..."
-//
-//                printfn
-//                    "Evictions: %A, map: %A"
-//                    evicted
-//                    (map
-//                     |> Map.toList
-//                     |> List.filter (fun (k, v) -> k.Name.StartsWith("departure")))
-//
-//                tryToFindExactFields map evicted
+    // TODO: I got stuck narrowing down the correct fields
+    // I now have a list of valid fieldnumbers for every rule, by itself,
+    // but I need to trim those down to one fieldnumber per rule
+    // which sounds like a reasonable task but... ¯\_(ツ)_/¯
+    possibleFieldsPerRule |> List.ofSeq
 
 let rules, myTicket, nearbyTickets =
     File.ReadAllText "input.txt"
@@ -127,4 +86,6 @@ let validTickets =
     |> Seq.map (fun ticket -> validateTicket rules ticket)
     |> Seq.choose id
 
-crackFields rules validTickets |> printfn "%A"
+crackFields rules validTickets
+|> List.filter (fun (rule, fieldnumbers) -> rule.Name.StartsWith("departure"))
+|> printfn "%A"
