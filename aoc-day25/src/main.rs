@@ -6,11 +6,10 @@ const DIVISOR: usize = 20201227;
 /// Speedy when cache includes computation for `loop_size-1`,
 /// otherwise performs `loop_size` iterations
 fn transform_sub_num(cache: &mut HashMap<usize, usize>, sub: usize, loop_size: usize) -> usize {
-    let transformed = cache
-        .get(&(loop_size - 1))
-        .and_then(|prev| Some((prev * sub) % DIVISOR))
-        .or_else(|| Some((0..loop_size).fold(1, |acc, _| (acc * sub) % DIVISOR)))
-        .unwrap();
+    let transformed = cache.get(&(loop_size - 1)).map_or_else(
+        || (0..loop_size).fold(1, |acc, _| (acc * sub) % DIVISOR),
+        |prev| (prev * sub) % DIVISOR,
+    );
 
     cache.insert(loop_size, transformed);
 
